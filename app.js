@@ -143,6 +143,62 @@ app.delete("/libro/:id", async (req, res) => {
     }
 });
 
+app.put("/libro/:id", async (req, res) => {
+    try{
+        
+        let nombre = req.body.nombre;
+        let autor = req.body.autor;
+        let genero = req.body.genero;
+        let prestado = req.body.prestado;
+        
+        if(nombre === undefined){
+            throw new Error('No enviaste nombre'+e);
+        }
+    
+        if(nombre ==''){
+            throw new Error('El nombre no puede estar vacio'+e);
+        }
+    
+        if(autor === undefined){
+            throw new Error('No enviaste autor'+e);
+        }
+    
+        if(autor ==''){
+            throw new Error('El autor no puede estar vacio'+e);
+        }
+    
+        if(genero === undefined){
+            throw new Error('No enviaste genero'+e);
+        }
+    
+        if(genero ==''){
+            throw new Error('El genero no puede estar vacio'+e);
+        }
+
+        if(prestado === undefined){
+            throw new Error('No enviaste prestado'+e);
+        }
+    
+        if(prestado ==''){
+            throw new Error('prestado no puede estar vacio'+e);
+        }
+        let libro =
+                {
+                    nombre: nombre,
+                    autor: autor,
+                    genero: genero,
+                    prestado: prestado,
+        }
+        let respuesta = await LibroModel.findByIdAndUpdate(req.params.id, libro, {new: true});
+        
+        res.status(200).send(libro);
+    }
+    catch(e){
+        console.log(e);
+        res.status(422).send({error: e});
+    }
+});
+
 
 // GENEROS 
 app.get('/genero', async (req, res)=>{
