@@ -131,6 +131,18 @@ app.post('/libro', (req, res) =>{
     }
 });
 
+app.delete("/libro/:id", async (req, res) => {
+    try{
+        let id = req.params.id;
+        await LibroModel.findByIdAndDelete(id);
+        res.status(200).send({message: "Se borro correctamente"});
+    }
+    catch(e){
+        console.log(e);
+        res.status(422).send({error: e});
+    }
+});
+
 
 // GENEROS 
 app.get('/genero', async (req, res)=>{
