@@ -126,9 +126,14 @@ app.post('/libro', (req, res) =>
             prestado: prestado,
         }
 
-        LibroModel.create(libro)
-
-        res.status(200).send('El libro que enviaste es ' + nombre + ' y se mando correctamente ');
+        LibroModel.create(libro, (errCreate, resCreate) =>
+        {
+            if (errCreate) throw new Error(errCreate)
+            if (resCreate)
+            {
+                res.status(200).send(resCreate);
+            }
+        });
     }
     catch (e)
     {
