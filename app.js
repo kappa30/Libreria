@@ -196,7 +196,7 @@ app.put("/libro/:id", (req, res) =>
             prestado: prestado,
         }
 
-        LibroModel.findByIdAndUpdate(id, libro, { new: true }, (errFind, resFind) =>
+        LibroModel.findByIdAndUpdate(id, libro, (errFind, resFind) =>
         {
             if (errFind) throw new Error(errFind)
             if (resFind)
