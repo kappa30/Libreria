@@ -45,8 +45,6 @@ const LibroModel = mongoose.model("libros", LibroSchema);
 
 
 // LIBROS
-
-
 app.get('/libro', async (req, res) =>
 {
 
@@ -72,7 +70,7 @@ app.get('/libro', async (req, res) =>
     }
 });
 
-app.get('/libro/:id', async (req, res) =>
+app.get('/libro/:id', (req, res) =>
 {
     try
     {
@@ -83,10 +81,11 @@ app.get('/libro/:id', async (req, res) =>
             throw new Error('Error al leer el id');
         }
 
-        let respuesta = null;
-        respuesta = await LibroModel.findById(id);
-
-        res.status(200).send(respuesta);
+        LibroModel.findById(id, (errFind, resFind) =>
+        {
+            if (errFind) throw new Error(errFind)
+            res.status(200).send(resFind);
+        });
     }
     catch (e)
     {
@@ -302,7 +301,7 @@ app.put('/genero/:id', async (req, res) =>
             });
         }
         let librosConEseGenero = null;
-        librosConEseGenero = await LibroModel.find({genero: id });
+        librosConEseGenero = await LibroModel.find({ genero: id });
         if (librosConEseGenero.length > 0)
         {
             throw new Error("No se puede modificar, hay libros asociados");
