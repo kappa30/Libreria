@@ -141,7 +141,7 @@ app.post('/libro', (req, res) =>
     }
 });
 
-app.delete("/libro/:id", async (req, res) =>
+app.delete("/libro/:id", (req, res) =>
 {
     try
     {
@@ -152,8 +152,14 @@ app.delete("/libro/:id", async (req, res) =>
             throw new Error('Error al leer el id');
         }
 
-        await LibroModel.findByIdAndDelete(id);
-        res.status(200).send({ message: "Se borro correctamente" });
+        LibroModel.findByIdAndDelete(id, (errFind, resFind) =>
+        {
+            if (errFind) throw new Error(errFind)
+            if (resFind)
+            {
+                res.status(200).send({ message: "Se borro correctamente" });
+            }
+        });
     }
     catch (e)
     {
@@ -162,7 +168,7 @@ app.delete("/libro/:id", async (req, res) =>
     }
 });
 
-app.put("/libro/:id", async (req, res) =>
+app.put("/libro/:id", (req, res) =>
 {
     try
     {
@@ -192,9 +198,15 @@ app.put("/libro/:id", async (req, res) =>
             genero: genero,
             prestado: prestado,
         }
-        let respuesta = await LibroModel.findByIdAndUpdate(id, libro, { new: true });
 
-        res.status(200).send(libro);
+        LibroModel.findByIdAndUpdate(id, libro, { new: true }, (errFind, resFind) =>
+        {
+            if (errFind) throw new Error(errFind)
+            if (resFind)
+            {
+                res.status(200).send(resFind);
+            }
+        });
     }
     catch (e)
     {
