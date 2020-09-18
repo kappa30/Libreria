@@ -180,7 +180,7 @@ app.put("/libro/:id", async (req, res) =>
         {
             throw new Error('Error al leer el genero');
         }
-        
+
         let libro =
         {
             nombre: nombre,
@@ -239,7 +239,7 @@ app.post('/genero', async (req, res) =>
         if (checkEmptyValue(nombre))
         {
             throw new Error('Error al leer el nombre');
-        }   
+        }
 
         let existeNombre = null;
         existeNombre = await GeneroModel.find({ nombre: nombre.toUpperCase() });
@@ -287,10 +287,10 @@ app.put('/genero/:id', async (req, res) =>
         if (checkEmptyValue(nombre))
         {
             throw new Error('Error al leer el nombre');
-        }  
-        
+        }
+
         // Verificamos condiciones para poder modificar
-        let generoExiste = await GeneroModel.find({ "nombre": nombre });
+        let generoExiste = await GeneroModel.find({ nombre: nombre });
         if (generoExiste.length > 0)
         {
             generoExiste.forEach(unGenero =>
