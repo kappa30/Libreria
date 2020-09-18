@@ -168,45 +168,19 @@ app.put("/libro/:id", async (req, res) =>
         let genero = req.body.genero;
         let prestado = req.body.prestado;
 
-        if (nombre === undefined)
+        if (checkEmptyValue(nombre))
         {
-            throw new Error('No enviaste nombre' + e);
+            throw new Error('Error al leer el nombre');
         }
-
-        if (nombre == '')
+        if (checkEmptyValue(autor))
         {
-            throw new Error('El nombre no puede estar vacio' + e);
+            throw new Error('Error al leer el autor');
         }
-
-        if (autor === undefined)
+        if (checkEmptyValue(genero))
         {
-            throw new Error('No enviaste autor' + e);
+            throw new Error('Error al leer el genero');
         }
-
-        if (autor == '')
-        {
-            throw new Error('El autor no puede estar vacio' + e);
-        }
-
-        if (genero === undefined)
-        {
-            throw new Error('No enviaste genero' + e);
-        }
-
-        if (genero == '')
-        {
-            throw new Error('El genero no puede estar vacio' + e);
-        }
-
-        if (prestado === undefined)
-        {
-            throw new Error('No enviaste prestado' + e);
-        }
-
-        if (prestado == '')
-        {
-            throw new Error('prestado no puede estar vacio' + e);
-        }
+        
         let libro =
         {
             nombre: nombre,
