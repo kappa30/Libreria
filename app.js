@@ -45,7 +45,6 @@ const LibroModel = mongoose.model("libros", LibroSchema);
 // LIBROS
 app.get('/libro', (req, res) =>
 {
-
     try
     {
         LibroModel.find((error, resultado) =>
@@ -270,12 +269,13 @@ app.post('/genero', (req, res) =>
             throw new Error('Error al leer el nombre');
         }
 
-        GeneroModel.find({ nombre: nombre.toUpperCase() }, (errFind, resFind) =>
+        GeneroModel.findOne({ nombre: nombre.toUpperCase() }, (errFind, resFind) =>
         {
             if (errFind) throw new Error(errFind)
             if (resFind)
             {
-                throw new Error('ya existe un genero con el nombre: ' + nombre);
+                console.log(resFind);
+                res.status(422).send({ error: 'ya existe un genero con el nombre: ' + nombre });
             }
             else
             {
@@ -315,8 +315,13 @@ app.delete('/genero/:id', (req, res) =>
             {
                 // se hace la eliminacion logica del genero devuelto en el find
                 resFind.deleted = 1;
-                GeneroModel.findByIdAndUpdate(id, resFind);
-                res.status(200).send({ message: "Se borro genero" });
+                GeneroModel.findByIdAndUpdate(id, resFind, (errUpdate, resUpdate) =>
+                {
+                    if (errUpdate) throw new Error(errUpdate)
+
+                    res.status(200).send({ message: "Se borro genero" });
+                });
+
             }
         });
     }
@@ -343,23 +348,26 @@ app.put('/genero/:id', (req, res) =>
             throw new Error('Error al leer el nombre');
         }
 
+        // siempre iran en mayuscula el genero guardado
+        nombre = nombre.toUpperCase();
+
         // Se verifica que no exista otro genero con el nuevo nombre por el que se desea modificar.-
-        GeneroModel.find({ nombre: nombre }, (errFindGenero, resFindGenero) =>
+        GeneroModel.findOne({ nombre: nombre }, (errFindGenero, resFindGenero) =>
         {
             if (errFindGenero) throw new Error(errFindGenero)
             if (resFindGenero)
             {
-                throw new Error("Ya existe ese genero");
+                res.status(422).send({ error: "Ya existe ese genero" });
             }
             else
             {
                 // Se verifica si existen libros ya cargados con este genero o no.-
-                LibroModel.find({ genero: id }, (errFindLibro, resFindLibro) =>
+                LibroModel.findOne({ genero: id }, (errFindLibro, resFindLibro) =>
                 {
                     if (errFindLibro) throw new Error(errFindLibro)
                     if (resFindLibro)
                     {
-                        throw new Error("No se puede modificar, hay libros asociados");
+                        res.status(422).send({ error: "No se puede modificar, hay libros asociados" });
                     }
                     else
                     {
@@ -368,8 +376,14 @@ app.put('/genero/:id', (req, res) =>
                         {
                             nombre: nombre
                         }
-                        GeneroModel.findByIdAndUpdate(id, generoModificado);
-                        res.status(200).send({ message: 'Se actualizo correctamente el genero' });
+                        GeneroModel.findByIdAndUpdate(id, generoModificado, (errUpdate, resultUpdate) =>
+                        {
+                            if (errUpdate) throw new Error(errUpdate)
+                            if (resultUpdate)
+                            {
+                                res.status(200).send({ message: 'Se actualizo correctamente el genero' });
+                            }
+                        });
                     }
                 });
             }
