@@ -357,7 +357,22 @@ app.put('/genero/:id', async (req, res) =>
     }
 });
 
+// UTILS ------------------------------------------------------------------------------------------------- //
+/**
+ * Chequea si un valor es 'undefined' o 'empty'.-
+ * @param {*} value 
+ * @returns true or false
+ */
+function checkEmptyValue(value)
+{
+    if (value == undefined || value == '')
+    {
+        return true;
+    }
+    return false;
+}
 
+// SERVER START --------------------------------------------------------------------------------------------- //
 app.listen(3000, () =>
 {
     console.log("Servidor escuchando en el puerto 3000");
