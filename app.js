@@ -132,7 +132,7 @@ app.post('/libro', (req, res) =>
     }
     catch (e)
     {
-        res.status(422).send({ error: e });
+        res.status(422).send({ error: e.message });
     }
 });
 app.delete("/libro/:id", (req, res) =>
@@ -158,7 +158,7 @@ app.delete("/libro/:id", (req, res) =>
     catch (e)
     {
         console.log(e);
-        res.status(422).send({ error: e });
+        res.status(422).send({ error: e.message });
     }
 });
 app.put("/libro/:id", (req, res) =>
@@ -208,7 +208,7 @@ app.put("/libro/:id", (req, res) =>
     catch (e)
     {
         console.log(e);
-        res.status(422).send({ error: e });
+        res.status(422).send({ error: e.message });
     }
 });
 
@@ -229,7 +229,7 @@ app.get('/genero', (req, res) =>
     catch (e)
     {
         console.log(e);
-        res.status(422).send({ error: e });
+        res.status(422).send({ error: e.message });
     }
 });
 app.get('/genero/:id', (req, res) =>
@@ -255,7 +255,7 @@ app.get('/genero/:id', (req, res) =>
     catch (e)
     {
         console.log(e);
-        res.status(422).send({ error: e });
+        res.status(422).send({ error: e.message });
     }
 });
 app.post('/genero', (req, res) =>
@@ -299,7 +299,7 @@ app.post('/genero', (req, res) =>
     catch (e)
     {
         console.log(e);
-        res.status(422).send({ message: e });
+        res.status(422).send({ error: e.message });
     }
 });
 app.delete('/genero/:id', (req, res) =>
@@ -328,7 +328,7 @@ app.delete('/genero/:id', (req, res) =>
     catch (e)
     {
         console.log(e);
-        res.status(422).send({ error: e });
+        res.status(422).send({ error: e.message });
     }
 });
 app.put('/genero/:id', (req, res) =>
@@ -392,7 +392,7 @@ app.put('/genero/:id', (req, res) =>
     catch (e)
     {
         console.log(e);
-        res.status(422).send({ error: e });
+        res.status(422).send({ error: e.message });
     }
 });
 
