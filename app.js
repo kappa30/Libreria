@@ -162,7 +162,7 @@ app.put("/libro/:id", async (req, res) =>
 {
     try
     {
-
+        let id = req.params.id;
         let nombre = req.body.nombre;
         let autor = req.body.autor;
         let genero = req.body.genero;
@@ -214,7 +214,7 @@ app.put("/libro/:id", async (req, res) =>
             genero: genero,
             prestado: prestado,
         }
-        let respuesta = await LibroModel.findByIdAndUpdate(req.params.id, libro, { new: true });
+        let respuesta = await LibroModel.findByIdAndUpdate(id, libro, { new: true });
 
         res.status(200).send(libro);
     }
