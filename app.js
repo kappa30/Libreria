@@ -291,6 +291,11 @@ app.put('/genero/:id', async (req, res) =>
         let id = req.params.id;
         let nombre = req.body.nombre;
 
+        if (checkEmptyValue(id))
+        {
+            throw new Error('Error al leer el id');
+        }
+
         if (checkEmptyValue(nombre))
         {
             throw new Error('Error al leer el nombre');
