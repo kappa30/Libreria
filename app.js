@@ -77,6 +77,12 @@ app.get('/libro/:id', async (req, res) =>
     try
     {
         let id = req.params.id;
+
+        if (checkEmptyValue(id))
+        {
+            throw new Error('Error al leer el id');
+        }
+
         let respuesta = null;
         respuesta = await LibroModel.findById(id);
 
@@ -98,34 +104,17 @@ app.post('/libro', (req, res) =>
         let genero = req.body.genero;
         let prestado = "";
 
-        if (nombre === undefined)
+        if (checkEmptyValue(nombre))
         {
-            throw new Error('No enviaste nombre' + e);
+            throw new Error('Error al leer el nombre');
         }
-
-        if (nombre == '')
+        if (checkEmptyValue(autor))
         {
-            throw new Error('El nombre no puede estar vacio' + e);
+            throw new Error('Error al leer el autor');
         }
-
-        if (autor === undefined)
+        if (checkEmptyValue(genero))
         {
-            throw new Error('No enviaste autor' + e);
-        }
-
-        if (autor == '')
-        {
-            throw new Error('El autor no puede estar vacio' + e);
-        }
-
-        if (genero === undefined)
-        {
-            throw new Error('No enviaste genero' + e);
-        }
-
-        if (genero == '')
-        {
-            throw new Error('El genero no puede estar vacio' + e);
+            throw new Error('Error al leer el genero');
         }
 
         // me falta ver como mandar el genero de la tabla generos
@@ -153,6 +142,12 @@ app.delete("/libro/:id", async (req, res) =>
     try
     {
         let id = req.params.id;
+
+        if (checkEmptyValue(id))
+        {
+            throw new Error('Error al leer el id');
+        }
+
         await LibroModel.findByIdAndDelete(id);
         res.status(200).send({ message: "Se borro correctamente" });
     }
@@ -318,6 +313,7 @@ app.put('/genero/:id', async (req, res) =>
         // Validacion de datos
         let nombre = req.body.nombre;
         let id = req.params.id;
+
         if (nombre == undefined)
         {
             throw new Error('Tenes que enviar un nombre');
