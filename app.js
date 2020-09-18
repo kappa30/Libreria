@@ -137,7 +137,7 @@ app.post('/libro', (req, res) =>
     }
     catch (e)
     {
-        res.status(422).send('Hubo un error ' + e);
+        res.status(422).send({ error: e });
     }
 });
 
