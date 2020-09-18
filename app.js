@@ -42,10 +42,8 @@ const LibroSchema = new mongoose.Schema
 
 const LibroModel = mongoose.model("libros", LibroSchema);
 
-
-
 // LIBROS
-app.get('/libro', async (req, res) =>
+app.get('/libro', (req, res) =>
 {
 
     try
@@ -69,7 +67,6 @@ app.get('/libro', async (req, res) =>
         res.status(422).send({ error: e });
     }
 });
-
 app.get('/libro/:id', (req, res) =>
 {
     try
@@ -93,7 +90,6 @@ app.get('/libro/:id', (req, res) =>
     }
 
 });
-
 app.post('/libro', (req, res) =>
 {
     try
@@ -140,7 +136,6 @@ app.post('/libro', (req, res) =>
         res.status(422).send({ error: e });
     }
 });
-
 app.delete("/libro/:id", (req, res) =>
 {
     try
@@ -167,7 +162,6 @@ app.delete("/libro/:id", (req, res) =>
         res.status(422).send({ error: e });
     }
 });
-
 app.put("/libro/:id", (req, res) =>
 {
     try
@@ -178,6 +172,10 @@ app.put("/libro/:id", (req, res) =>
         let genero = req.body.genero;
         let prestado = req.body.prestado;
 
+        if (checkEmptyValue(id))
+        {
+            throw new Error('Error al leer el id');
+        }
         if (checkEmptyValue(nombre))
         {
             throw new Error('Error al leer el nombre');
@@ -215,15 +213,19 @@ app.put("/libro/:id", (req, res) =>
     }
 });
 
-
 // GENEROS 
-app.get('/genero', async (req, res) =>
+app.get('/genero', (req, res) =>
 {
     try
     {
-        let respuesta = null;
-        respuesta = await GeneroModel.find({ deleted: 0 });
-        res.status(200).send(respuesta);
+        GeneroModel.find({ deleted: 0 }, (errFind, resFind) =>
+        {
+            if (errFind) throw new Error(errFind)
+            if (resFind)
+            {
+                res.status(200).send(resFind);
+            }
+        });
     }
     catch (e)
     {
@@ -231,14 +233,25 @@ app.get('/genero', async (req, res) =>
         res.status(422).send({ error: e });
     }
 });
-app.get('/genero/:id', async (req, res) =>
+app.get('/genero/:id', (req, res) =>
 {
     try
     {
         let id = req.params.id;
-        let respuesta = null;
-        respuesta = await GeneroModel.findById(id);
-        res.status(200).send(respuesta);
+
+        if (checkEmptyValue(id))
+        {
+            throw new Error('Error al leer el id');
+        }
+
+        GeneroModel.findById(id, (errFind, resFind) =>
+        {
+            if (errFind) throw new Error(errFind)
+            if (resFind)
+            {
+                res.status(200).send(resFind);
+            }
+        });
     }
     catch (e)
     {
@@ -246,7 +259,7 @@ app.get('/genero/:id', async (req, res) =>
         res.status(422).send({ error: e });
     }
 });
-app.post('/genero', async (req, res) =>
+app.post('/genero', (req, res) =>
 {
     try
     {
@@ -257,38 +270,55 @@ app.post('/genero', async (req, res) =>
             throw new Error('Error al leer el nombre');
         }
 
-        let existeNombre = null;
-        existeNombre = await GeneroModel.find({ nombre: nombre.toUpperCase() });
-
-        if (existeNombre.length > 0)
+        GeneroModel.find({ nombre: nombre.toUpperCase() }, (errFind, resFind) =>
         {
-            throw new Error('Ese genero ya existe');
-        }
-
-        let genero =
-        {
-            nombre: nombre.toUpperCase(),
-            deleted: 0
-        }
-        await GeneroModel.create(genero);
-        res.status(200).send(genero);
+            if (errFind) throw new Error(errFind)
+            if (resFind)
+            {
+                throw new Error('ya existe un genero con el nombre: ' + nombre);
+            }
+            else
+            {
+                // si se superan las comprobaciones se pasa a crear el genero
+                let genero =
+                {
+                    nombre: nombre.toUpperCase(),
+                    deleted: 0
+                }
+                GeneroModel.create(genero, (errCreate, resCreate) =>
+                {
+                    if (errCreate) throw new Error(errCreate)
+                    if (resCreate)
+                    {
+                        res.status(200).send(genero);
+                    }
+                });
+            }
+        });
     }
     catch (e)
     {
         console.log(e);
-        res.status(422).send({ message: 'Este genero ya esta cargado' });
+        res.status(422).send({ message: e });
     }
 });
-app.delete('/genero/:id', async (req, res) =>
+app.delete('/genero/:id', (req, res) =>
 {
     try
     {
         let id = req.params.id;
 
-        let generoGuardado = await GeneroModel.findById(id);
-        generoGuardado.deleted = 1;
-        await GeneroModel.findByIdAndUpdate(id, generoGuardado);
-        res.status(200).send({ message: "Se borro genero" });
+        GeneroModel.findById(id, (errFind, resFind) =>
+        {
+            if (errFind) throw new Error(errFind)
+            if (resFind)
+            {
+                // se hace la eliminacion logica del genero devuelto en el find
+                resFind.deleted = 1;
+                GeneroModel.findByIdAndUpdate(id, resFind);
+                res.status(200).send({ message: "Se borro genero" });
+            }
+        });
     }
     catch (e)
     {
@@ -296,7 +326,7 @@ app.delete('/genero/:id', async (req, res) =>
         res.status(422).send({ error: e });
     }
 });
-app.put('/genero/:id', async (req, res) =>
+app.put('/genero/:id', (req, res) =>
 {
     try
     {
@@ -314,23 +344,36 @@ app.put('/genero/:id', async (req, res) =>
         }
 
         // Se verifica que no exista otro genero con el nuevo nombre por el que se desea modificar.-
-        let generoExiste = await GeneroModel.find({ nombre: nombre });
-        if (generoExiste.length > 0)
+        GeneroModel.find({ nombre: nombre }, (errFindGenero, resFindGenero) =>
         {
-            throw new Error("Ya existe ese genero");
-        }
-        // Se verifica que no hallan libros asociados a este genero.-
-        let librosConEseGenero = null;
-        librosConEseGenero = await LibroModel.find({ genero: id });
-        if (librosConEseGenero.length > 0)
-        {
-            throw new Error("No se puede modificar, hay libros asociados");
-        }
-        let generoModificado = {
-            nombre: nombre
-        }
-        await GeneroModel.findByIdAndUpdate(id, generoModificado);
-        res.status(200).send(generoModificado);
+            if (errFindGenero) throw new Error(errFindGenero)
+            if (resFindGenero)
+            {
+                throw new Error("Ya existe ese genero");
+            }
+            else
+            {
+                // Se verifica si existen libros ya cargados con este genero o no.-
+                LibroModel.find({ genero: id }, (errFindLibro, resFindLibro) =>
+                {
+                    if (errFindLibro) throw new Error(errFindLibro)
+                    if (resFindLibro)
+                    {
+                        throw new Error("No se puede modificar, hay libros asociados");
+                    }
+                    else
+                    {
+                        // Si se superan todas las comprobaciones se procede a actualizar el nombre del genero.-
+                        let generoModificado =
+                        {
+                            nombre: nombre
+                        }
+                        GeneroModel.findByIdAndUpdate(id, generoModificado);
+                        res.status(200).send({ message: 'Se actualizo correctamente el genero' });
+                    }
+                });
+            }
+        });
     }
     catch (e)
     {
