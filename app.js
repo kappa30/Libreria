@@ -302,7 +302,7 @@ app.put('/genero/:id', async (req, res) =>
             });
         }
         let librosConEseGenero = null;
-        librosConEseGenero = await LibroModel.find({ "genero": id });
+        librosConEseGenero = await LibroModel.find({genero: id });
         if (librosConEseGenero.length > 0)
         {
             throw new Error("No se puede modificar, hay libros asociados");
