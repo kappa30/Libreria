@@ -247,11 +247,14 @@ app.post('/genero', async (req, res) =>
 
         let existeNombre = null;
         existeNombre = await GeneroModel.find({ nombre: nombre.toUpperCase() });
+
         if (existeNombre.length > 0)
         {
             throw new Error('Ese genero ya existe');
         }
-        let genero = {
+
+        let genero =
+        {
             nombre: nombre.toUpperCase(),
             deleted: 0
         }
@@ -273,7 +276,7 @@ app.delete('/genero/:id', async (req, res) =>
         let generoGuardado = await GeneroModel.findById(id);
         generoGuardado.deleted = 1;
         await GeneroModel.findByIdAndUpdate(id, generoGuardado);
-        res.status(200).send({ "message": "Se borro genero" });
+        res.status(200).send({ message: "Se borro genero" });
     }
     catch (e)
     {
