@@ -301,18 +301,13 @@ app.put('/genero/:id', async (req, res) =>
             throw new Error('Error al leer el nombre');
         }
 
-        // Verificamos condiciones para poder modificar
+        // Se verifica que no exista otro genero con el nuevo nombre por el que se desea modificar.-
         let generoExiste = await GeneroModel.find({ nombre: nombre });
         if (generoExiste.length > 0)
         {
-            generoExiste.forEach(unGenero =>
-            {
-                if (unGenero.id != id)
-                {
-                    throw new Error("Ya existe ese genero");
-                }
-            });
+            throw new Error("Ya existe ese genero");
         }
+        // Se verifica que no hallan libros asociados a este genero.-
         let librosConEseGenero = null;
         librosConEseGenero = await LibroModel.find({ genero: id });
         if (librosConEseGenero.length > 0)
