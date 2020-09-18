@@ -235,14 +235,11 @@ app.post('/genero', async (req, res) =>
     try
     {
         let nombre = req.body.nombre;
-        if (nombre == undefined)
+
+        if (checkEmptyValue(nombre))
         {
-            throw new Error('Tenes que enviar un nombre');
-        }
-        if (nombre == '')
-        {
-            throw new Error('El nombre no puede ser vacio');
-        }
+            throw new Error('Error al leer el nombre');
+        }   
 
         let existeNombre = null;
         existeNombre = await GeneroModel.find({ nombre: nombre.toUpperCase() });
@@ -268,7 +265,7 @@ app.delete('/genero/:id', async (req, res) =>
     try
     {
         let id = req.params.id;
-        let respuesta = null;
+
         let generoGuardado = await GeneroModel.findById(id);
         generoGuardado.deleted = 1;
         await GeneroModel.findByIdAndUpdate(id, generoGuardado);
@@ -284,18 +281,14 @@ app.put('/genero/:id', async (req, res) =>
 {
     try
     {
-        // Validacion de datos
-        let nombre = req.body.nombre;
         let id = req.params.id;
+        let nombre = req.body.nombre;
 
-        if (nombre == undefined)
+        if (checkEmptyValue(nombre))
         {
-            throw new Error('Tenes que enviar un nombre');
-        }
-        if (nombre == '')
-        {
-            throw new Error('El nombre no puede ser vacio');
-        }
+            throw new Error('Error al leer el nombre');
+        }  
+        
         // Verificamos condiciones para poder modificar
         let generoExiste = await GeneroModel.find({ "nombre": nombre });
         if (generoExiste.length > 0)
