@@ -7,10 +7,11 @@ async function conectar()
 {
     try
     {
-        await mongoose.connect(uri, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        })
+        await mongoose.connect(uri,
+            {
+                useNewUrlParser: true,
+                useUnifiedTopology: true
+            })
         console.log("Conectado a la base de datos metodo: mongoodb - async-await");
     }
     catch (e)
@@ -43,7 +44,7 @@ const LibroSchema = new mongoose.Schema
 const LibroModel = mongoose.model("libros", LibroSchema);
 
 // LIBROS
-app.get('/libro', (req, res) =>
+app.get('/libro', async (req, res) =>
 {
     try
     {
@@ -63,10 +64,10 @@ app.get('/libro', (req, res) =>
     catch (e)
     {
         console.log(e);
-        res.status(422).send({ error: e });
+        res.status(422).send({ error: e.message });
     }
 });
-app.get('/libro/:id', (req, res) =>
+app.get('/libro/:id', async (req, res) =>
 {
     try
     {
@@ -77,15 +78,14 @@ app.get('/libro/:id', (req, res) =>
             throw new Error('Error al leer el id');
         }
 
-        LibroModel.findById(id, (errFind, resFind) =>
-        {
-            if (errFind) throw new Error(errFind)
-            res.status(200).send(resFind);
-        });
+        let respuesta = null;
+        respuesta = await LibroModel.findById(id);
+
+        res.status(200).send(respuesta);
     }
     catch (e)
     {
-        res.status(422).send({ error: e });
+        res.status(422).send({ error: e.message });
     }
 
 });
@@ -111,8 +111,6 @@ app.post('/libro', (req, res) =>
             throw new Error('Error al leer el genero');
         }
 
-        // me falta ver como mandar el genero de la tabla generos
-
         let libro =
         {
             nombre: nombre,
@@ -121,21 +119,16 @@ app.post('/libro', (req, res) =>
             prestado: prestado,
         }
 
-        LibroModel.create(libro, (errCreate, resCreate) =>
-        {
-            if (errCreate) throw new Error(errCreate)
-            if (resCreate)
-            {
-                res.status(200).send(resCreate);
-            }
-        });
+        LibroModel.create(libro)
+
+        res.status(200).send({ message: 'Se cargo correctamente el libro' });
     }
     catch (e)
     {
         res.status(422).send({ error: e.message });
     }
 });
-app.delete("/libro/:id", (req, res) =>
+app.delete('/libro/:id', async (req, res) =>
 {
     try
     {
@@ -146,14 +139,8 @@ app.delete("/libro/:id", (req, res) =>
             throw new Error('Error al leer el id');
         }
 
-        LibroModel.findByIdAndDelete(id, (errFind, resFind) =>
-        {
-            if (errFind) throw new Error(errFind)
-            if (resFind)
-            {
-                res.status(200).send({ message: "Se borro correctamente" });
-            }
-        });
+        await LibroModel.findByIdAndDelete(id);
+        res.status(200).send({ message: 'Se borro correctamente' });
     }
     catch (e)
     {
@@ -161,11 +148,13 @@ app.delete("/libro/:id", (req, res) =>
         res.status(422).send({ error: e.message });
     }
 });
-app.put("/libro/:id", (req, res) =>
+app.put("/libro/:id", async (req, res) =>
 {
     try
     {
+        // params
         let id = req.params.id;
+        // body
         let nombre = req.body.nombre;
         let autor = req.body.autor;
         let genero = req.body.genero;
@@ -187,6 +176,10 @@ app.put("/libro/:id", (req, res) =>
         {
             throw new Error('Error al leer el genero');
         }
+        if (checkEmptyValue(prestado))
+        {
+            throw new Error('Error al leer el prestado');
+        }
 
         let libro =
         {
@@ -195,15 +188,9 @@ app.put("/libro/:id", (req, res) =>
             genero: genero,
             prestado: prestado,
         }
+        await LibroModel.findByIdAndUpdate(id, libro);
 
-        LibroModel.findByIdAndUpdate(id, libro, (errFind, resFind) =>
-        {
-            if (errFind) throw new Error(errFind)
-            if (resFind)
-            {
-                res.status(200).send(resFind);
-            }
-        });
+        res.status(200).send({ message: 'se actualizo el libro correctamente' });
     }
     catch (e)
     {
@@ -213,18 +200,13 @@ app.put("/libro/:id", (req, res) =>
 });
 
 // GENEROS 
-app.get('/genero', (req, res) =>
+app.get('/genero', async (req, res) =>
 {
     try
     {
-        GeneroModel.find({ deleted: 0 }, (errFind, resFind) =>
-        {
-            if (errFind) throw new Error(errFind)
-            if (resFind)
-            {
-                res.status(200).send(resFind);
-            }
-        });
+        let respuesta = null;
+        respuesta = await GeneroModel.find({ deleted: 0 });
+        res.status(200).send(respuesta);
     }
     catch (e)
     {
@@ -232,7 +214,58 @@ app.get('/genero', (req, res) =>
         res.status(422).send({ error: e.message });
     }
 });
-app.get('/genero/:id', (req, res) =>
+app.get('/genero/:id', async (req, res) =>
+{
+    try
+    {
+        let id = req.params.id;
+        
+        if (checkEmptyValue(id))
+        {
+            throw new Error('Error al leer el id');
+        }
+
+        let respuesta = null;
+        respuesta = await GeneroModel.findById(id);
+        res.status(200).send(respuesta);
+    }
+    catch (e)
+    {
+        console.log(e);
+        res.status(422).send({ error: e.message });
+    }
+});
+app.post('/genero', async (req, res) =>
+{
+    try
+    {
+        let nombre = req.body.nombre;
+        if (checkEmptyValue(nombre))
+        {
+            throw new Error('Error al leer el nombre');
+        }
+
+        let existeNombre = null;
+        existeNombre = await GeneroModel.find({ nombre: nombre.toUpperCase() });
+        if (existeNombre.length > 0)
+        {
+            throw new Error('Ese genero ya existe');
+        }
+        let genero =
+        {
+            nombre: nombre.toUpperCase(),
+            deleted: 0
+        }
+        await GeneroModel.create(genero);
+        res.status(200).send(genero);
+    }
+    catch (e)
+    {
+        console.log(e);
+        res.status(422).send({ error: e.message });
+    }
+});
+app.delete('/genero/:id', async (req, res) =>
 {
     try
     {
@@ -243,14 +276,11 @@ app.get('/genero/:id', (req, res) =>
             throw new Error('Error al leer el id');
         }
 
-        GeneroModel.findById(id, (errFind, resFind) =>
-        {
-            if (errFind) throw new Error(errFind)
-            if (resFind)
-            {
-                res.status(200).send(resFind);
-            }
-        });
+        let generoGuardado = await GeneroModel.findById(id);
+        generoGuardado.deleted = 1;
+        await GeneroModel.findByIdAndUpdate(id, generoGuardado);
+
+        res.status(200).send({ message: "Se borro genero" });
     }
     catch (e)
     {
@@ -258,136 +288,49 @@ app.get('/genero/:id', (req, res) =>
         res.status(422).send({ error: e.message });
     }
 });
-app.post('/genero', (req, res) =>
+app.put('/genero/:id', async (req, res) =>
 {
     try
     {
+        //params
+        let id = req.params.id;
+        //body
         let nombre = req.body.nombre;
 
+        if (checkEmptyValue(id))
+        {
+            throw new Error('Error al leer el id');
+        }
         if (checkEmptyValue(nombre))
         {
             throw new Error('Error al leer el nombre');
         }
 
-        GeneroModel.findOne({ nombre: nombre.toUpperCase() }, (errFind, resFind) =>
+        // Verificamos condiciones para poder modificar
+        let generoExiste = await GeneroModel.find({ nombre: nombre.toUpperCase() });
+        if (generoExiste.length > 0)
         {
-            if (errFind) throw new Error(errFind)
-            if (resFind)
+            generoExiste.forEach(unGenero =>
             {
-                console.log(resFind);
-                res.status(422).send({ error: 'ya existe un genero con el nombre: ' + nombre });
-            }
-            else
-            {
-                // si se superan las comprobaciones se pasa a crear el genero
-                let genero =
+                if (unGenero.id != id)
                 {
-                    nombre: nombre.toUpperCase(),
-                    deleted: 0
+                    throw new Error("Ya existe ese genero");
                 }
-                GeneroModel.create(genero, (errCreate, resCreate) =>
-                {
-                    if (errCreate) throw new Error(errCreate)
-                    if (resCreate)
-                    {
-                        res.status(200).send(genero);
-                    }
-                });
-            }
-        });
-    }
-    catch (e)
-    {
-        console.log(e);
-        res.status(422).send({ error: e.message });
-    }
-});
-app.delete('/genero/:id', (req, res) =>
-{
-    try
-    {
-        let id = req.params.id;
-
-        GeneroModel.findById(id, (errFind, resFind) =>
+            });
+        }
+        let librosConEseGenero = null;
+        librosConEseGenero = await LibroModel.find({ genero: id });
+        if (librosConEseGenero.length > 0)
         {
-            if (errFind) throw new Error(errFind)
-            if (resFind)
-            {
-                // se hace la eliminacion logica del genero devuelto en el find
-                resFind.deleted = 1;
-                GeneroModel.findByIdAndUpdate(id, resFind, (errUpdate, resUpdate) =>
-                {
-                    if (errUpdate) throw new Error(errUpdate)
-
-                    res.status(200).send({ message: "Se borro genero" });
-                });
-
-            }
-        });
-    }
-    catch (e)
-    {
-        console.log(e);
-        res.status(422).send({ error: e.message });
-    }
-});
-app.put('/genero/:id', (req, res) =>
-{
-    try
-    {
-        let id = req.params.id;
-        let nombre = req.body.nombre;
-
-        if (checkEmptyValue(id))
-        {
-            throw new Error('Error al leer el id');
+            throw new Error("No se puede modificar, hay libros asociados");
         }
 
-        if (checkEmptyValue(nombre))
+        let generoModificado =
         {
-            throw new Error('Error al leer el nombre');
-        }
-
-        // siempre iran en mayuscula el genero guardado
-        nombre = nombre.toUpperCase();
-
-        // Se verifica que no exista otro genero con el nuevo nombre por el que se desea modificar.-
-        GeneroModel.findOne({ nombre: nombre }, (errFindGenero, resFindGenero) =>
-        {
-            if (errFindGenero) throw new Error(errFindGenero)
-            if (resFindGenero)
-            {
-                res.status(422).send({ error: "Ya existe ese genero" });
-            }
-            else
-            {
-                // Se verifica si existen libros ya cargados con este genero o no.-
-                LibroModel.findOne({ genero: id }, (errFindLibro, resFindLibro) =>
-                {
-                    if (errFindLibro) throw new Error(errFindLibro)
-                    if (resFindLibro)
-                    {
-                        res.status(422).send({ error: "No se puede modificar, hay libros asociados" });
-                    }
-                    else
-                    {
-                        // Si se superan todas las comprobaciones se procede a actualizar el nombre del genero.-
-                        let generoModificado =
-                        {
-                            nombre: nombre
-                        }
-                        GeneroModel.findByIdAndUpdate(id, generoModificado, (errUpdate, resultUpdate) =>
-                        {
-                            if (errUpdate) throw new Error(errUpdate)
-                            if (resultUpdate)
-                            {
-                                res.status(200).send({ message: 'Se actualizo correctamente el genero' });
-                            }
-                        });
-                    }
-                });
-            }
-        });
+            nombre: nombre.toUpperCase()
+        };
+        await GeneroModel.findByIdAndUpdate(id, generoModificado);
+        res.status(200).send(generoModificado);
     }
     catch (e)
     {
@@ -395,7 +338,6 @@ app.put('/genero/:id', (req, res) =>
         res.status(422).send({ error: e.message });
     }
 });
-
 // UTILS ------------------------------------------------------------------------------------------------- //
 /**
  * Chequea si un valor es 'undefined' o 'empty'.-
